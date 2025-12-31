@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SincroGanado - Panel de Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .hidden { display: none; }
+        .hero-section { background: #f8f9fa; padding: 2rem; border-radius: 10px; margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">🚜 SincroGanado</a>
+            <button id="logoutBtn" class="btn btn-outline-danger btn-sm hidden" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="loginSection" class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h4 class="text-center mb-4">Iniciar Sesión</h4>
+                        <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Correo">
+                        <input type="password" id="loginPass" class="form-control mb-3" placeholder="Contraseña">
+                        <button class="btn btn-primary w-100" onclick="login()">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mainDashboard" class="hidden">
+            <div class="hero-section shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>Panel de Inventario</h2>
+                    <p class="text-muted">Gestiona tus animales y granjas sincronizadas</p>
+                </div>
+                <div id="adminControls" class="hidden">
+                    <button class="btn btn-success" onclick="sincronizar()">🔄 Sincronizar API</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+                        <li class="nav-item"><button class="nav-link active" onclick="mostrarSeccion('animales')">Animales</button></li>
+                        <li class="nav-item"><button class="nav-link" onclick="mostrarSeccion('movimientos')">Historial Movimientos</button></li>
+                    </ul>
+
+                    <div id="animalesContent">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h4>Listado de Animales</h4>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAnimal">Registrar Animal</button>
+                        </div>
+                        <table class="table table-hover border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Especie</th>
+                                    <th>Granja / Galera</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaAnimales"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="movimientosContent" class="hidden">
+                        <h4>Auditoría de Movimientos</h4>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Animal</th>
+                                    <th>Tipo</th>
+                                    <th>Destino</th>
+                                    <th>Nota</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaMovimientos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+
+<div class="modal fade" id="modalAnimal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Registro de Animal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAnimal">
+                    <input type="text" id="cod" class="form-control mb-2" placeholder="Código Único" required>
+                    <select id="esp" class="form-select mb-2">
+                        <option value="res">Res</option>
+                        <option value="aves">Aves</option>
+                        <option value="cerdos">Cerdos</option>
+                        <option value="caballos">Caballos</option>
+                    </select>
+                    <input type="text" id="nom" class="form-control mb-2" placeholder="Nombre">
+                    <select id="sex" class="form-select mb-2">
+                        <option value="M">Macho (M)</option>
+                        <option value="H">Hembra (H)</option>
+                    </select>
+                    <input type="date" id="fec" class="form-control mb-2">
+                    <input type="text" id="raz" class="form-control mb-2" placeholder="Raza">
+                    <input type="number" id="pes" class="form-control mb-2" placeholder="Peso Inicial">
+                    <input type="number" id="idG" class="form-control mb-2" placeholder="ID Granja">
+                    <input type="number" id="idGal" class="form-control mb-2" placeholder="ID Galera">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarAnimal()">Guardar Animal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTraslado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">📍 Registrar Traslado de Animal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="traslado_id_animal">
+                <div class="mb-3">
+                    <label class="form-label">Nueva Granja Destino</label>
+                    <select id="traslado_idG" class="form-select" onchange="filtrarGalerasTraslado()"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nueva Galera Destino</label>
+                    <select id="traslado_idGal" class="form-select"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nota / Motivo</label>
+                    <textarea id="traslado_nota" class="form-control" placeholder="Ej: Mantenimiento de galera actual"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-warning" onclick="ejecutarTraslado()">Confirmar Traslado</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
