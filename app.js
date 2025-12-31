@@ -112,30 +112,39 @@ function mostrarSeccion(tipo) {
 }
 
 async function guardarAnimal() {
-    const nuevoAnimal = {
-        codigo_internounico: "BOV-005",
-        especie: "res",
-        nombre: "Lucero",
-        sexo: "M",
-        fecha_nacimiento: "2023-01-15",
-        raza: "Holstein",
-        peso_inicial: 450.50,
-        observaciones: "Sin novedades",
-        id_granja: 1, // ID obtenido de la ruta /api/granjas
-        id_galera: 2  // ID obtenido de la ruta /api/galeras
+    const animal = {
+        codigo_internounico: document.getElementById('cod').value,
+        especie: document.getElementById('esp').value,
+        nombre: document.getElementById('nom').value,
+        sexo: document.getElementById('sex').value,
+        fecha_nacimiento: document.getElementById('fec').value,
+        raza: document.getElementById('raz').value,
+        peso_inicial: document.getElementById('pes').value,
+        id_granja: document.getElementById('idG').value,
+        id_galera: document.getElementById('idGal').value,
+        observaciones: "Registro desde Frontend"
     };
 
-    const response = await fetch('http://localhost:3000/api/animales', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // El token guardado tras el login
-        },
-        body: JSON.stringify(nuevoAnimal)
-    });
-    
-    const result = await response.json();
-    alert(result.message);
+    try {
+        const res = await fetch(`${API_URL}/animales`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}` 
+            },
+            body: JSON.stringify(animal)
+        });
+
+        if (res.ok) {
+            alert("Animal registrado con éxito");
+            location.reload(); // Recargar para ver el nuevo animal en la tabla
+        } else {
+            const err = await res.json();
+            alert("Error: " + err.message);
+        }
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 // 1. Función que se activa al dar clic en el botón amarillo (chincheta)
